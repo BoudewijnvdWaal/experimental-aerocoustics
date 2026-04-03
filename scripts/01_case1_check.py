@@ -16,10 +16,7 @@ def main():
 	print(f"Running first test with case {case_number}: {case_path}")
 	signals, fs, meta = load_case(case_path)
 	print_case_summary(meta, fs, signals)
-	print(
-		f"Assignment nominal U_inf = {case_info['U_mps_nominal']:.1f} m/s "
-		f"(file metadata FlowSpeed = {meta['flow_speed_mps']:.2f} m/s)"
-	)
+	print(f"Assignment nominal U_inf = {case_info['U_mps_nominal']:.1f} m/s")
 
 	freqs, psd = compute_psd(signals, fs, nperseg=4096, overlap=0.5)
 	df = freqs[1] - freqs[0]
@@ -41,7 +38,7 @@ def main():
 		center_spl,
 		title=(
 			f"Case 1 ({case_info['type']}) - Array average vs center mic\n"
-			f"U={meta['flow_speed_mps']:.2f} m/s, AoA={meta['angle_of_attack_deg']:.1f} deg"
+			f"U={case_info['U_mps_nominal']:.1f} m/s, AoA={case_info['aoa_deg']:.1f} deg"
 		),
 		save_path=out_dir / "case1_avg_vs_center_spl.png",
 	)

@@ -34,9 +34,8 @@ def main():
 		)
 
 		print(
-			f"Case {case_id}: U_nominal={info['U_mps_nominal']:.1f} m/s, "
-			f"U_file={meta['flow_speed_mps']:.2f} m/s, "
-			f"AoA={meta['angle_of_attack_deg']:.1f} deg, type={info['type']}"
+			f"Case {case_id}: U={info['U_mps_nominal']:.1f} m/s, "
+			f"AoA={info['aoa_deg']:.1f} deg, type={info['type']}"
 		)
 
 	plot_multiple_spectra(

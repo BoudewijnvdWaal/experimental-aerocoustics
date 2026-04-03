@@ -26,13 +26,13 @@ def main():
 
 	for case_id in case_ids:
 		info = get_case_info(case_id)
-		signals, fs, meta = load_case(get_case_path(case_id))
+		signals, fs, _meta = load_case(get_case_path(case_id))
 		freqs, psd = compute_psd(signals, fs, nperseg=4096, overlap=0.5)
 		df = freqs[1] - freqs[0]
 
 		avg_spl = psd_to_spl(compute_array_average_psd(psd), df)
 		tone_freq_hz, tone_level_db = find_fundamental_tone(freqs, avg_spl, f_min=200.0, f_max=10000.0)
-		model_freq_hz = semi_empirical_laminar_tone_frequency(meta["flow_speed_mps"], model_alpha=None)
+		model_freq_hz = semi_empirical_laminar_tone_frequency(info["U_mps_nominal"], model_alpha=None)
 
 		spectra[f"Case {case_id} ({info['file'].split('/')[-1]})"] = avg_spl
 
@@ -47,13 +47,13 @@ def main():
 
 		if model_freq_hz is None:
 			print(
-				f"Case {case_id}: U_nominal={info['U_mps_nominal']:.1f} m/s, U_file={meta['flow_speed_mps']:.2f} m/s, "
+				f"Case {case_id}: U={info['U_mps_nominal']:.1f} m/s, AoA={info['aoa_deg']:.1f} deg, "
 				f"measured tone = {tone_freq_hz:.1f} Hz "
 				f"(level {tone_level_db:.1f} dB). Model value not set yet."
 			)
 		else:
 			print(
-				f"Case {case_id}: U_nominal={info['U_mps_nominal']:.1f} m/s, U_file={meta['flow_speed_mps']:.2f} m/s, "
+				f"Case {case_id}: U={info['U_mps_nominal']:.1f} m/s, AoA={info['aoa_deg']:.1f} deg, "
 				f"measured tone = {tone_freq_hz:.1f} Hz (level {tone_level_db:.1f} dB), "
 				f"model tone = {model_freq_hz:.1f} Hz, delta = {tone_freq_hz - model_freq_hz:.1f} Hz"
 			)

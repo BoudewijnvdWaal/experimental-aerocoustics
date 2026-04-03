@@ -20,7 +20,7 @@ def main():
 
 	for case_id in case_ids:
 		case_info = get_case_info(case_id)
-		signals, fs, meta = load_case(get_case_path(case_id))
+		signals, fs, _meta = load_case(get_case_path(case_id))
 		freqs, psd = compute_psd(signals, fs, nperseg=4096, overlap=0.5)
 		avg_psd = compute_array_average_psd(psd)
 
@@ -32,8 +32,7 @@ def main():
 		oaspl_1000_6300.append(L2)
 
 		print(
-			f"Case {case_id}: U={meta['flow_speed_mps']:.2f} m/s, "
-			f"U_nominal={case_info['U_mps_nominal']:.1f} m/s, "
+			f"Case {case_id}: U={case_info['U_mps_nominal']:.1f} m/s, "
 			f"OASPL[400,6300]={L1:.2f} dB, OASPL[1000,6300]={L2:.2f} dB"
 		)
 

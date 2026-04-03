@@ -25,7 +25,7 @@ def main():
 
 	for case_id in case_ids:
 		info = get_case_info(case_id)
-		signals, fs, meta = load_case(get_case_path(case_id))
+		signals, fs, _meta = load_case(get_case_path(case_id))
 		freqs, psd = compute_psd(signals, fs, nperseg=4096, overlap=0.5)
 		df = freqs[1] - freqs[0]
 		avg_spl = psd_to_spl(compute_array_average_psd(psd), df)
@@ -35,9 +35,8 @@ def main():
 		spectra[label] = avg_spl
 
 		print(
-			f"Case {case_id}: type={info['type']}, U_nominal={info['U_mps_nominal']:.1f} m/s, "
-			f"U_file={meta['flow_speed_mps']:.2f} m/s, "
-			f"AoA={meta['angle_of_attack_deg']:.1f} deg, strongest bin at {f_dom:.1f} Hz ({l_dom:.1f} dB)"
+			f"Case {case_id}: type={info['type']}, U={info['U_mps_nominal']:.1f} m/s, "
+			f"AoA={info['aoa_deg']:.1f} deg, strongest bin at {f_dom:.1f} Hz ({l_dom:.1f} dB)"
 		)
 
 	plot_multiple_spectra(
