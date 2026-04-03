@@ -1,204 +1,112 @@
-# Experimental Aeroacoustics Analysis
+# Experimental Aeroacoustics Assignment
 
-Aeroacoustic analysis and data processing for NACA0018 airfoil experiments at various wind speeds and angles of attack.
+Python workflow for the TU Delft experimental aeroacoustics assignment on NACA0018 trailing-edge noise.
+
+## Current Status
+
+- Implemented: first-case check and Tasks 1 to 4.
+- Not implemented yet: bonus beamforming task (Task e in assignment).
 
 ## Project Structure
 
-```
+```text
 experimental-aerocoustics/
-├── Archive_1_4/          # U15, U20, U25 (baseline conditions)
-│   ├── NACA0018_U15_AA0_REF.h5
-│   ├── NACA0018_U20_AA0_REF.h5
-│   └── NACA0018_U25_AA0_REF.h5
-├── Archive_2_4/          # U25 at AA4, AA8, AA10 (poststall)
-│   ├── NACA0018_U25_AA4_REF.h5
-│   ├── NACA0018_U25_AA8_REF.h5
-│   └── NACA0018_U25_AA10_poststall_REF.h5
-├── Archive_3_4/          # U25 at AA10, AA12 (poststall)
-│   ├── NACA0018_U25_AA10_REF.h5
-│   ├── NACA0018_U25_AA12_REF.h5
-│   └── NACA0018_U25_AA12_poststall_REF.h5
-├── Archive_4_4/          # U25 at AA14, AA18, AA24 (high angle of attack)
-│   ├── NACA0018_U25_AA14_poststall_REF.h5
-│   ├── NACA0018_U25_AA18_REF.h5
-│   └── NACA0018_U25_AA24_REF.h5
-├── Mic_poses_rel_13032020.xlsx  # Microphone position reference data
-├── main.py                       # Main analysis entry point
-└── README.md                     # This file
+    Archive_1_4/ ... Archive_4_4/   # HDF5 measurement data (Git LFS)
+    outputs/                        # Generated plots/results per task
+    scripts/
+        01_case1_check.py             # First validation run (case 1)
+        02_task1_cases123.py          # Task 1: cases 1,2,3
+        03_task2_cases59.py           # Task 2: cases 5,9
+        04_task3_cases461078.py       # Task 3: cases 4,6,7,8,10
+        05_task4_cases11112.py        # Task 4: cases 1,11,12
+    src/
+        case_map.py                   # Assignment case mapping
+        io_h5.py                      # HDF5 loading utilities
+        spectra.py                    # PSD/SPL computations
+        metrics.py                    # Tone, OASPL, scaling metrics
+        plotting.py                   # Figure helpers
+    inspect_file.py                 # HDF5 structure inspector
+    main.py                         # CLI entrypoint
+    README.md
 ```
 
-## Prerequisites
+## Requirements
 
-### System Requirements
-- Python 3.8 or higher
-- Git (with Git LFS support)
-- ~3 GB free disk space (for .h5 data files)
+- Python 3.10+
+- Git + Git LFS
+- About 3 GB free disk space for data
 
-### Install Git LFS
+## Git LFS Setup (Keep This)
 
-**Windows (PowerShell):**
-```powershell
-choco install git-lfs
-# OR download from https://git-lfs.github.com/ and install manually
-```
-
-**macOS (Homebrew):**
-```bash
-brew install git-lfs
-```
-
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt-get install git-lfs
-```
-
-## Quick Start
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/BoudewijnvdWaal/experimental-aerocoustics.git
-cd experimental-aerocoustics
-```
-
-### 2. Install Git LFS and Download Data
+After cloning, always pull LFS files before analysis.
 
 ```bash
 git lfs install
 git lfs pull
 ```
 
-⏱️ **This will take 10–20 minutes** (downloads ~2.93 GB of .h5 files).
+If `.h5` files are only a few KB, they are pointer files and were not pulled correctly. Run `git lfs pull` again.
 
-### 3. Verify Data Download
+Quick file size check (Windows PowerShell):
 
-Check that .h5 files are downloaded (not pointer files):
-
-**Windows (PowerShell):**
 ```powershell
 (Get-Item Archive_1_4/NACA0018_U15_AA0_REF.h5).Length
-# Should show ~262 MB, not a few bytes
 ```
 
-**macOS/Linux:**
-```bash
-ls -lh Archive_1_4/NACA0018_U15_AA0_REF.h5
-# Should show ~262 MB
+It should be hundreds of MB, not a tiny text-like file.
+
+## Environment Setup
+
+Windows (PowerShell):
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install numpy matplotlib h5py pandas
 ```
 
-### 4. Set Up Python Environment (Optional but Recommended)
+## How To Run
 
-```bash
-# Create virtual environment
-python -m venv venv
+Run from repository root.
 
-# Activate it
-# Windows:
-.\venv\Scripts\activate
-# macOS/Linux:
-source venv/bin/activate
-
-# Install dependencies (once you create requirements.txt)
-pip install -r requirements.txt
-```
-
-## Working with .h5 Files
-
-The .h5 files contain experimental data and are **read-only** in this repository. Do not modify them directly.
-
-### Reading .h5 Files in Python
-
-```python
-import h5py
-
-# Open an .h5 file
-with h5py.File('Archive_1_4/NACA0018_U15_AA0_REF.h5', 'r') as f:
-    # List all datasets and groups
-    def print_structure(name, obj):
-        print(name)
-    
-    f.visititems(print_structure)
-    
-    # Access specific data
-    # Example (adjust keys based on actual file structure):
-    # data = f['dataset_name'][:]
-```
-
-## Collaboration Workflow
-
-### For Team Members
-
-Each team member should follow the Quick Start section above.
-
-**Important:** If you pull the latest code and .h5 files show as placeholder files (pointer files), run:
-```bash
-git lfs pull
-```
-
-### Adding Analysis Code
-
-1. Create analysis scripts in the root directory or in an `analysis/` subdirectory.
-2. Commit and push your code:
-   ```bash
-   git add your_analysis_script.py
-   git commit -m "Add analysis for [description]"
-   git push origin main
-   ```
-3. **Do not commit changes to .h5 files.** They are tracked by Git LFS and should not be modified.
-
-### Using Branches (Optional)
-
-For larger analyses, consider creating a feature branch:
+First test case:
 
 ```bash
-git checkout -b feature/my-analysis
-# Work on your analysis
-git push origin feature/my-analysis
-# When ready, create a Pull Request on GitHub
+python main.py --mode case-check
 ```
 
-## File Structure Best Practices
+Individual tasks:
 
-- **Analysis scripts:** `*.py` files in root or `analysis/` folder
-- **Notebooks:** `*.ipynb` files in `notebooks/` folder (if using Jupyter)
-- **Outputs:** Create `outputs/` directory for results (add to `.gitignore` if large)
-- **Data:** Leave `.h5` files as-is; do not modify
-
-## Troubleshooting
-
-### .h5 Files Show as Pointer Files After Pull
-
-Run:
 ```bash
-git lfs pull
+python main.py --mode task1
+python main.py --mode task2
+python main.py --mode task3
+python main.py --mode task4
 ```
 
-### Permission Denied When Trying to Push
+Run all implemented tasks in sequence:
 
-Make sure you have **Write** access to the repository. Contact the repository owner.
+```bash
+python main.py --mode all
+```
 
-### LFS Quota Issues
+## Outputs
 
-If you see "LFS quota exceeded" during clone, the repository owner may need to enable LFS overage billing. Contact them.
+- Figures are saved under `outputs/task0_case1_check`, `outputs/task1_cases123`, etc.
+- Scripts also print key numerical values in terminal.
 
-## Data Attribution
+## Notes Per Task
 
-**File naming convention:**
-- `NACA0018`: Airfoil profile
-- `U##`: Wind speed (m/s) – e.g., U15 = 15 m/s, U25 = 25 m/s
-- `AA##`: Angle of attack (degrees)
-- `poststall`: Indicates measurement in poststall regime
-- `REF`: Reference measurement
+- Task 1: compares array-averaged SPL with center microphone (channel 41).
+- Task 2: detects fundamental tone for cases 5 and 9.
+- Task 3: compares spectra for cases 4,6,7,8,10 and reports dominant peaks.
+- Task 4: computes OASPL bands and fits velocity scaling exponent.
 
-## References
+## Beamforming
 
-- **Airfoil:** NACA0018 symmetric airfoil
-- **Mic Positions:** `Mic_poses_rel_13032020.xlsx` contains reference coordinates
+Beamforming from the course is not yet implemented in this repository.
+If needed, add a new module and script for assignment bonus Task e.
 
-## Contact
+## Last Updated
 
-For questions about data access or repository setup, contact the repository owner.
-
----
-
-**Last updated:** April 2026
+April 2026
